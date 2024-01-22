@@ -20,7 +20,7 @@ To use UserStorage in your project, follow these steps:
 1. Add the UserStorage package to your project's dependencies in your `Package.swift` file:
 
    ```swift
-   .package(url: "https://github.com/smartbyte/UserStorage.git", from: "1.0.0")
+   .package(url: "https://github.com/smart-byte/UserStorage.git", from: "0.1.0")
    ```
 
 2. In your project, import the UserStorage module:
@@ -105,6 +105,3 @@ struct ContentView: View {
 ```
 
 The example above demonstrates how to create a UserSettingsModel that stores the a username, the app's theme, and whether or not the app has been launched before. The `@PublishedUserStorage` property wrapper is used to create the UserSettings. The `@PublishedUserStorage` property wrapper is a combination of Swift's built-in `@AppStorage` property wrapper and `@Published` property wrappers.
-
-## License
-This package is available under the MIT license. See the [LICENSE]() file for more details.

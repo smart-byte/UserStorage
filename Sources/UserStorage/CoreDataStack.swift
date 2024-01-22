@@ -1,11 +1,11 @@
 import CoreData
 
-class CoreDataStack {
+public class CoreDataStack {
     static let shared = CoreDataStack()
 
     let persistentContainer: NSPersistentContainer
 
-    init(databaseURL: URL? = nil, inMemory: Bool = false) {
+    public init(databaseURL: URL? = nil, inMemory: Bool = false) {
         let entity = NSEntityDescription()
         entity.name = "UserStorage"
         entity.managedObjectClassName = NSStringFromClass(UserStorage.self)
@@ -64,11 +64,11 @@ class CoreDataStack {
         }
     }
 
-    var viewContext: NSManagedObjectContext {
+    public var viewContext: NSManagedObjectContext {
         return persistentContainer.viewContext
     }
 
-    func newBackgroundContext() -> NSManagedObjectContext {
+    public func newBackgroundContext() -> NSManagedObjectContext {
         return persistentContainer.newBackgroundContext()
     }
 }

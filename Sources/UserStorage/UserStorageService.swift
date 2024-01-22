@@ -1,13 +1,13 @@
 import CoreData
 
-class UserStorageService {
+public class UserStorageService {
     private let coreDataStack: CoreDataStack
 
-    init( coreDataStack: CoreDataStack = CoreDataStack.shared ) {
-        self.coreDataStack = coreDataStack
+    public init( coreDataStack: CoreDataStack? = nil ) {
+        self.coreDataStack = coreDataStack ?? CoreDataStack.shared
     }
 
-    func load<T: Codable>( key: String) -> T? {
+    public func load<T: Codable>( key: String) -> T? {
         guard let data = loadValue(forKey: key),
               let value = try? JSONDecoder().decode(T.self, from: Data(data.utf8)) else {
             return nil
@@ -15,7 +15,7 @@ class UserStorageService {
         return value
     }
 
-    func save<T: Codable>(_ object: T, forKey key: String) {
+    public func save<T: Codable>(_ object: T, forKey key: String) {
         if let data = try? JSONEncoder().encode(object) {
             saveValue(String(data: data, encoding: .utf8)!, forKey: key)
         }
