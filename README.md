@@ -66,6 +66,17 @@ class UserSettingsModel: ObservableObject {
         case light
         case dark
     }
+    
+    init() {
+        // Syncs `objectWillChange` from `PublishedUserStorageWrapper` properties 
+        // with the parent object's `ObservableObjectPublisher` to announce changes.
+        let mirror = Mirror(reflecting: self)
+        mirror.children.forEach { child in
+            if let observedProperty = child.value as? PublishedUserStorageWrapper {
+                observedProperty.objectWillChange = self.objectWillChange
+            }
+        }
+    }
 }
 ```
 
