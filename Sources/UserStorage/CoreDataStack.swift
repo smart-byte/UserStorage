@@ -1,7 +1,7 @@
 import CoreData
 
 public class CoreDataStack {
-    static let shared = CoreDataStack()
+    public static let shared = CoreDataStack()
 
     let persistentContainer: NSPersistentContainer
 
