@@ -11,11 +11,12 @@ public protocol PublishedUserStorageWrapper: AnyObject {
 public class PublishedUserStorage<T>: PublishedUserStorageWrapper where T: Codable {
     private var value: T
     private let key: String
-    private var userStorageService = UserStorageService()
+    private var userStorageService: UserStorageService
     public weak var objectWillChange: ObservableObjectPublisher?
 
-    public init( wrappedValue defaultValue: T, _ key: String) {
+    public init( wrappedValue defaultValue: T, _ key: String, service: UserStorageService = UserStorageService()) {
         self.key = key
+        self.userStorageService = service
         self.value = userStorageService.load(key: key) ?? defaultValue
     }
 

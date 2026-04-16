@@ -12,6 +12,12 @@ class UserStorageServiceTests: XCTestCase {
     }
 
     override func tearDown() {
+        userStorageService = nil
+        coreDataStack = nil
+        let url = temporaryURL()
+        try? FileManager.default.removeItem(at: url)
+        try? FileManager.default.removeItem(at: url.deletingLastPathComponent().appendingPathComponent("UserStorageTest.sqlite-shm"))
+        try? FileManager.default.removeItem(at: url.deletingLastPathComponent().appendingPathComponent("UserStorageTest.sqlite-wal"))
         super.tearDown()
     }
 

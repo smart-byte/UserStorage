@@ -2,8 +2,21 @@ import XCTest
 @testable import UserStorage
 
 class PublishedUserStorageTests: XCTestCase {
+    var service: UserStorageService!
+
+    override func setUp() {
+        super.setUp()
+        let stack = CoreDataStack(inMemory: true)
+        service = UserStorageService(coreDataStack: stack)
+    }
+
+    override func tearDown() {
+        service = nil
+        super.tearDown()
+    }
+
     func testSaveAndLoadValue() {
-        @PublishedUserStorage( "testKey") var testValue: String = "testValue"
+        @PublishedUserStorage("testKey", service: service) var testValue: String = "testValue"
 
         testValue = "newValue"
 
@@ -20,7 +33,7 @@ class PublishedUserStorageTests: XCTestCase {
             var arrayValue: [String]
         }
 
-        @PublishedUserStorage( "testKey") var testValue: ComplexStruct = ComplexStruct(
+        @PublishedUserStorage("testKey", service: service) var testValue: ComplexStruct = ComplexStruct(
             boolValue: true,
             floatValue: 1.234,
             stringValue: "testStringValue",
