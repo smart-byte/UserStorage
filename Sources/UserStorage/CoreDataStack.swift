@@ -1,14 +1,14 @@
 import CoreData
 
 public class CoreDataStack {
-    static let shared = CoreDataStack()
+    public static let shared = CoreDataStack()
 
     let persistentContainer: NSPersistentContainer
 
     public init(databaseURL: URL? = nil, inMemory: Bool = false) {
         let entity = NSEntityDescription()
-        entity.name = "UserStorage"
-        entity.managedObjectClassName = NSStringFromClass(UserStorage.self)
+        entity.name = "UserStorageEntity"
+        entity.managedObjectClassName = NSStringFromClass(UserStorageEntity.self)
 
         // Attribute definieren
         let keyAttribute = NSAttributeDescription()
