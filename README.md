@@ -1,37 +1,40 @@
 ![Swift Version](https://img.shields.io/badge/Swift-5.9%2B-orange)
 ![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20iOS%20%7C%20iPadOS%20%7C%20watchOS%20%7C%20tvOS-lightgrey)
+![License](https://img.shields.io/badge/License-MIT-blue)
 
 # UserStorage
 
-UserStorage is a Swift package that provides a thread-safe and versatile alternative to UserDefaults. While UserDefaults is limited to basic types, UserStorage allows you to store variables of any type, including complex structures, in a thread-safe manner. Additionally, it includes a property wrapper for creating UserSettings, which can be used both inside and outside of views, similar to Swift's AppStorage.
+A lightweight Swift package for persistent key-value storage — powered by CoreData. Unlike `UserDefaults`, which is limited to property list types (`String`, `Int`, `Bool`, `Data`, `Date`, `Array`, `Dictionary`), UserStorage can persist **any `Codable` type**, including custom structs and enums, in a thread-safe SQLite-backed store.
 
-## Features
+It also ships with `@PublishedUserStorage`, a property wrapper that works like `@AppStorage` — but isn't limited to SwiftUI views and supports any `Codable` type.
 
-- **Thread Safety:** UserStorage is designed to be thread-safe, ensuring that your data remains consistent even when accessed from multiple threads.
+## Why not just UserDefaults?
 
-- **Versatile:** Unlike UserDefaults, UserStorage can store variables of any type, including custom structures.
-
-- **UserSettings Property Wrapper:** UserStorage includes a property wrapper called `@PublishedUserStorage` that makes it easy to create UserSettings. These settings can be used like Swift's built-in `@AppStorage` but are not limited to views and can be accessed from anywhere in your code.
+| | UserDefaults | UserStorage |
+|---|---|---|
+| Supported types | Property list types only | Any `Codable` type |
+| Storage backend | plist file | SQLite (CoreData) |
+| Thread safety | Not guaranteed | `performAndWait` on background contexts |
+| SwiftUI integration | `@AppStorage` (views only) | `@PublishedUserStorage` (anywhere) |
+| Custom structs/enums | Manual serialization needed | Works out of the box |
 
 ## Installation
 
-To use UserStorage in your project, follow these steps:
+Add UserStorage to your `Package.swift`:
 
-1. Add the UserStorage package to your project's dependencies in your `Package.swift` file:
+```swift
+.package(url: "https://github.com/smart-byte/UserStorage.git", from: "0.2.0")
+```
 
-   ```swift
-   .package(url: "https://github.com/smart-byte/UserStorage.git", from: "0.2.0")
-   ```
+Then import it:
 
-2. In your project, import the UserStorage module:
-
-  ```swift
-  import UserStorage
-  ```
+```swift
+import UserStorage
+```
 
 ## Usage
+
 ### Storing and Retrieving Data
-To store and retrieve data using UserStorage, follow these steps:
 
 ```swift
 import UserStorage
@@ -40,13 +43,26 @@ import UserStorage
 UserStorage.shared.save("Hello, UserStorage!", forKey: "greeting")
 
 // Retrieve the value
-if let greeting: String = UserStorage.shared.load(forKey: "greeting" ) {
+if let greeting: String = UserStorage.shared.load(forKey: "greeting") {
     print(greeting) // Output: Hello, UserStorage!
 }
+
+// Works with any Codable type
+struct UserProfile: Codable {
+    var name: String
+    var age: Int
+    var tags: [String]
+}
+
+let profile = UserProfile(name: "Mario", age: 30, tags: ["swift", "ios"])
+UserStorage.shared.save(profile, forKey: "profile")
+
+let loaded: UserProfile? = UserStorage.shared.load(forKey: "profile")
 ```
 
-### Using UserSettings
-UserSettings are a convenient way to manage application settings. Here's how you can use the `@PublishedUserStorage` property wrapper to create UserSettings:
+### Using @PublishedUserStorage
+
+`@PublishedUserStorage` is a property wrapper that combines the persistence of `@AppStorage` with the reactivity of `@Published`. It can be used in any `ObservableObject` — not just SwiftUI views.
 
 ```swift
 import SwiftUI
@@ -68,8 +84,7 @@ class UserSettingsModel: ObservableObject {
     }
     
     init() {
-        // Syncs `objectWillChange` from `PublishedUserStorageWrapper` properties 
-        // with the parent object's `ObservableObjectPublisher` to announce changes.
+        // Required: connect property wrapper publishers to ObservableObject
         let mirror = Mirror(reflecting: self)
         mirror.children.forEach { child in
             if let observedProperty = child.value as? PublishedUserStorageWrapper {
@@ -80,9 +95,9 @@ class UserSettingsModel: ObservableObject {
 }
 ```
 
-```swift
-import SwiftUI
+Then use it in your app like any other `ObservableObject`:
 
+```swift
 @main
 struct ExampleApp: App {
     @StateObject var userSettings = UserSettingsModel()
@@ -97,8 +112,6 @@ struct ExampleApp: App {
 ```
 
 ```swift
-import SwiftUI
-
 struct ContentView: View {
     @EnvironmentObject var userSettings: UserSettingsModel
 
@@ -115,4 +128,6 @@ struct ContentView: View {
 }
 ```
 
-The example above demonstrates how to create a UserSettingsModel that stores the a username, the app's theme, and whether or not the app has been launched before. The `@PublishedUserStorage` property wrapper is used to create the UserSettings. The `@PublishedUserStorage` property wrapper is a combination of Swift's built-in `@AppStorage` property wrapper and `@Published` property wrappers.
+## License
+
+MIT — see [LICENSE](LICENSE) for details.
