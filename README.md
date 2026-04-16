@@ -20,7 +20,7 @@ To use UserStorage in your project, follow these steps:
 1. Add the UserStorage package to your project's dependencies in your `Package.swift` file:
 
    ```swift
-   .package(url: "https://github.com/smart-byte/UserStorage.git", from: "0.1.0")
+   .package(url: "https://github.com/smart-byte/UserStorage.git", from: "0.2.0")
    ```
 
 2. In your project, import the UserStorage module:
