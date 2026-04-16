@@ -1,4 +1,4 @@
-![Swift Version](https://img.shields.io/badge/Swift-5.0%2B-orange)
+![Swift Version](https://img.shields.io/badge/Swift-5.9%2B-orange)
 ![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20iOS%20%7C%20iPadOS%20%7C%20watchOS%20%7C%20tvOS-lightgrey)
 
 # UserStorage
