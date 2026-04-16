@@ -24,17 +24,17 @@ public class UserStorageService {
     private func saveValue(_ value: String, forKey key: String) {
         let context = coreDataStack.newBackgroundContext()
         context.performAndWait {
-            let fetchRequest: NSFetchRequest<UserStorage> = NSFetchRequest<UserStorage>(entityName: "UserStorage")
+            let fetchRequest: NSFetchRequest<UserStorageEntity> = NSFetchRequest<UserStorageEntity>(entityName: "UserStorageEntity")
             fetchRequest.predicate = NSPredicate(format: "key == %@", key)
 
             do {
                 let results = try context.fetch(fetchRequest)
-                let storageValue: UserStorage
+                let storageValue: UserStorageEntity
 
                 if let result = results.first {
                     storageValue = result
                 } else {
-                    storageValue = UserStorage(context: context)
+                    storageValue = UserStorageEntity(context: context)
                     storageValue.key = key
                 }
 
@@ -51,7 +51,7 @@ public class UserStorageService {
         var resultValue: String?
 
         context.performAndWait {
-            let fetchRequest: NSFetchRequest<UserStorage> = NSFetchRequest<UserStorage>(entityName: "UserStorage")
+            let fetchRequest: NSFetchRequest<UserStorageEntity> = NSFetchRequest<UserStorageEntity>(entityName: "UserStorageEntity")
             fetchRequest.predicate = NSPredicate(format: "key == %@", key)
 
             do {

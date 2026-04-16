@@ -2,7 +2,7 @@ import SwiftUI
 import Combine
 
 @available(macOS 10.15, *)
-public protocol PublishedUserStorageWrapper: class {
+public protocol PublishedUserStorageWrapper: AnyObject {
     var objectWillChange: ObservableObjectPublisher? { get set }
 }
 

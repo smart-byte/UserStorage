@@ -7,8 +7,8 @@ public class CoreDataStack {
 
     public init(databaseURL: URL? = nil, inMemory: Bool = false) {
         let entity = NSEntityDescription()
-        entity.name = "UserStorage"
-        entity.managedObjectClassName = NSStringFromClass(UserStorage.self)
+        entity.name = "UserStorageEntity"
+        entity.managedObjectClassName = NSStringFromClass(UserStorageEntity.self)
 
         // Attribute definieren
         let keyAttribute = NSAttributeDescription()
