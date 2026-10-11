@@ -20,7 +20,10 @@ public class CoreDataStack {
         return failure
     }
 
-    public init(databaseURL: URL? = nil, inMemory: Bool = false) {
+    /// One model for every stack in the process. Each loaded model that describes
+    /// `UserStorageEntity` claims its class, so a second model (say an in-memory stack in tests next
+    /// to `shared`) makes `+entity` ambiguous and Core Data warns about it.
+    private static let model: NSManagedObjectModel = {
         let entity = NSEntityDescription()
         entity.name = "UserStorageEntity"
         entity.managedObjectClassName = NSStringFromClass(UserStorageEntity.self)
@@ -49,9 +52,12 @@ public class CoreDataStack {
 
         let model = NSManagedObjectModel()
         model.entities = [entity]
+        return model
+    }()
 
+    public init(databaseURL: URL? = nil, inMemory: Bool = false) {
         let containerName = "UserStorage"
-        persistentContainer = NSPersistentContainer(name: containerName, managedObjectModel: model )
+        persistentContainer = NSPersistentContainer(name: containerName, managedObjectModel: Self.model)
 
         if let url = databaseURL {
             let storeDescription = NSPersistentStoreDescription(url: url)
