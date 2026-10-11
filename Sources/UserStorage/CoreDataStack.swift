@@ -5,6 +5,21 @@ public class CoreDataStack {
 
     let persistentContainer: NSPersistentContainer
 
+    private let stateLock = NSLock()
+    private var failure: StoreLoadFailure?
+
+    /// Why the persistent store is not open; `nil` while it is.
+    ///
+    /// While this is non-nil the stack is unavailable: `UserStorageService` returns `nil` for every
+    /// load and drops every save, so nothing is ever written to a fallback location or over the
+    /// stored data. Do not use `viewContext` / `newBackgroundContext()` in that state: Core Data
+    /// terminates the process when a context without an open store saves.
+    public var loadFailure: StoreLoadFailure? {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        return failure
+    }
+
     public init(databaseURL: URL? = nil, inMemory: Bool = false) {
         let entity = NSEntityDescription()
         entity.name = "UserStorageEntity"
@@ -50,18 +65,42 @@ public class CoreDataStack {
             let defaultDirectory = FileManager.default.urls(
                 for: .applicationSupportDirectory,
                 in: .userDomainMask
-            ).first!
-            
+            ).first ?? NSPersistentContainer.defaultDirectoryURL()
+
             let defaultURL = defaultDirectory.appendingPathComponent("\(containerName).sqlite")
             let storeDescription = NSPersistentStoreDescription(url: defaultURL)
             persistentContainer.persistentStoreDescriptions = [storeDescription]
         }
 
-        persistentContainer.loadPersistentStores { _, error in
-            if let error = error {
-                fatalError("Unresolved error \(error)")
+        failure = openStores()
+    }
+
+    /// Tries to open the store again, for example after the user freed disk space, fixed the
+    /// permissions or moved a corrupt file away. Returns the remaining failure, or `nil` once the
+    /// store is open. Calling it on an open stack does nothing.
+    ///
+    /// Everything read while the stack was unavailable was `nil`. A caller that kept defaults in
+    /// memory for that reason must re-read its state after a successful reload; otherwise its next
+    /// `save` replaces the stored data with those defaults.
+    @discardableResult
+    public func reload() -> StoreLoadFailure? {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        // Core Data rejects adding an open store a second time ("Can't add the same store twice").
+        guard failure != nil else { return nil }
+        failure = openStores()
+        return failure
+    }
+
+    /// Relies on the default synchronous store loading: the handler has run before this returns.
+    private func openStores() -> StoreLoadFailure? {
+        var result: StoreLoadFailure?
+        persistentContainer.loadPersistentStores { description, error in
+            if let error = error, result == nil {
+                result = StoreLoadFailure(storeURL: description.url, underlying: error)
             }
         }
+        return result
     }
 
     public var viewContext: NSManagedObjectContext {

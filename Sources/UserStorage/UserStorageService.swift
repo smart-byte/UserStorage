@@ -7,6 +7,14 @@ public class UserStorageService {
         self.coreDataStack = coreDataStack ?? CoreDataStack.shared
     }
 
+    /// Why the store is not open; `nil` while it is. Check this to tell "unavailable" apart from
+    /// "nothing stored": while it is non-nil, `load` returns `nil` for every key and `save` does nothing.
+    public var loadFailure: StoreLoadFailure? { coreDataStack.loadFailure }
+
+    /// Tries to open the store again; see `CoreDataStack.reload()` for what to do with the result.
+    @discardableResult
+    public func reload() -> StoreLoadFailure? { coreDataStack.reload() }
+
     public func load<T: Codable>( key: String) -> T? {
         guard let data = loadValue(forKey: key),
               let value = try? JSONDecoder().decode(T.self, from: Data(data.utf8)) else {
@@ -21,8 +29,15 @@ public class UserStorageService {
         saveValue(value, forKey: key)
     }
 
+    /// The only place that hands out a context. Core Data terminates the process when a context
+    /// without an open store saves, and a fallback location could later overwrite the real file,
+    /// so an unavailable store gets no context at all.
+    private func makeContext() -> NSManagedObjectContext? {
+        coreDataStack.loadFailure == nil ? coreDataStack.newBackgroundContext() : nil
+    }
+
     private func saveValue(_ value: String, forKey key: String) {
-        let context = coreDataStack.newBackgroundContext()
+        guard let context = makeContext() else { return }
         context.performAndWait {
             let fetchRequest: NSFetchRequest<UserStorageEntity> = NSFetchRequest<UserStorageEntity>(entityName: "UserStorageEntity")
             fetchRequest.predicate = NSPredicate(format: "key == %@", key)
@@ -47,7 +62,7 @@ public class UserStorageService {
     }
 
     private func loadValue(forKey key: String) -> String? {
-        let context = coreDataStack.newBackgroundContext()
+        guard let context = makeContext() else { return nil }
         var resultValue: String?
 
         context.performAndWait {
