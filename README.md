@@ -128,6 +128,32 @@ struct ContentView: View {
 }
 ```
 
+## When the store cannot be opened
+
+Opening the SQLite file can fail, for example because it is corrupt, unreadable or sits in an unusable location. UserStorage does not terminate the process in that case. It records the failure, leaves the file exactly as it was, and the storage becomes *unavailable*:
+
+- `load` returns `nil` for every key. That looks the same as "nothing stored", so check `loadFailure` to tell the two apart.
+- `save` does nothing. There is no fallback store, so nothing can overwrite the real file later.
+
+```swift
+if let failure = UserStorage.shared.loadFailure {
+    // Run on defaults, tell the user, and offer to reveal failure.storeURL.
+    // failure.underlying is the error Core Data reported.
+}
+```
+
+`reload()` opens the store again, for example after the user moved a corrupt file away. It returns the remaining failure, or `nil` once the store is open, and does nothing on a store that is already open:
+
+```swift
+if UserStorage.shared.reload() == nil {
+    // Re-read your state now.
+}
+```
+
+Everything loaded while the storage was unavailable was a default, not stored data. After a successful `reload()`, re-read your state before the next `save`, otherwise the defaults replace the stored values.
+
+`loadFailure` and `reload()` exist on `UserStorage`, `UserStorageService` and `CoreDataStack`. `@PublishedUserStorage` keeps its in-memory value while the storage is unavailable. Do not use `CoreDataStack.viewContext` or `newBackgroundContext()` directly in that state: Core Data terminates the process when a context without an open store saves.
+
 ## License
 
 MIT — see [LICENSE](LICENSE) for details.
